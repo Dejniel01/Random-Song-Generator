@@ -6,4 +6,8 @@
     <RootNamespace>Random_Song_Generator</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="RestSharp" Version="107.3.0" />
+  </ItemGroup>
+
 </Project>
