@@ -1,5 +1,8 @@
-﻿using RestSharp;
+﻿using MetaBrainz.MusicBrainz;
+using MetaBrainz.MusicBrainz.Interfaces.Entities;
+using RestSharp;
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -7,10 +10,20 @@ namespace Random_Song_Generator
 {
     class Program
     {
+        const int MIN_WORDS = 5;
+        const int MAX_WORDS = 20;
         static void Main(string[] args)
         {
-            var word = GetNewWord();
-            Console.WriteLine(word);
+            int n;
+            do
+            {
+                Console.Write("How many records to generate? (between 5 and 20): ");
+                n = int.Parse(Console.ReadLine());
+            } while (n < MIN_WORDS || n > MAX_WORDS);
+
+            var data = GenerateData(n);
+
+            PrintData(data);
         }
 
         static string GetNewWord()
@@ -29,6 +42,56 @@ namespace Random_Song_Generator
 
             return data.word;
         }
+
+        static IRelease GetSong(string word)
+        {
+            var q = new Query("RandomSongGenerator", "1.0", "https://github.com/Dejniel01/Random-Song-Generator");
+
+            var songs = q.FindReleases($"release:{word}");
+
+            var s = songs.Results.GetEnumerator();
+
+            return s.MoveNext() ? s.Current.Item : null;
+        }
+
+        static List<(string word, IRelease song)> GenerateData(int n)
+        {
+            Console.WriteLine("Generating data...");
+            var data = new List<(string word, IRelease song)>();
+
+            for (int i = 0; i < n; i++)
+            {
+                var word = GetNewWord();
+                var song = GetSong(word);
+                data.Add((word, song));
+            }
+
+            data.Sort(((string word, IRelease song) t1, (string word, IRelease song) t2) 
+                => t1.word.CompareTo(t2.word));
+
+            return data;
+        }
+
+
+        static void PrintData(List<(string word, IRelease song)> data)
+        {
+            foreach (var t in data)
+            {
+                Console.WriteLine(t.word);
+                if (t.song == null)
+                {
+                    Console.WriteLine("\tNo recording found!");
+                }
+                else
+                {
+                    Console.WriteLine($"\tSong title:\n\t\t{t.song.Title}");
+                    Console.WriteLine($"\tArtists:");
+                    foreach (var a in t.song.ArtistCredit)
+                        Console.WriteLine($"\t\t{a.Name}");
+                    Console.WriteLine($"\tAlbum:\n\t\t{t.song.ReleaseGroup}");
+                }
+            }
+        }
     }
     class WordClass
     {
@@ -36,4 +99,5 @@ namespace Random_Song_Generator
         public string definition { get; set; }
         public string pronunciation { get; set; }
     }
+    
 }
