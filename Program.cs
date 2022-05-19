@@ -17,7 +17,7 @@ namespace Random_Song_Generator
             int n;
             do
             {
-                Console.Write("How many records to generate? (between 5 and 20): ");
+                Console.Write($"How many records to generate? (between {MIN_WORDS} and {MAX_WORDS}): ");
                 n = int.Parse(Console.ReadLine());
             } while (n < MIN_WORDS || n > MAX_WORDS);
 
@@ -58,12 +58,18 @@ namespace Random_Song_Generator
         {
             Console.WriteLine("Generating data...");
             var data = new List<(string word, IRelease song)>();
+            var words = new HashSet<string>();
 
             for (int i = 0; i < n; i++)
             {
-                var word = GetNewWord();
+                string word;
+                do
+                {
+                    word = GetNewWord();
+                } while (words.Contains(word));
                 var song = GetSong(word);
                 data.Add((word, song));
+                words.Add(word);
             }
 
             data.Sort(((string word, IRelease song) t1, (string word, IRelease song) t2) 
@@ -75,20 +81,20 @@ namespace Random_Song_Generator
 
         static void PrintData(List<(string word, IRelease song)> data)
         {
-            foreach (var t in data)
+            foreach (var (word, song) in data)
             {
-                Console.WriteLine(t.word);
-                if (t.song == null)
+                Console.WriteLine(word);
+                if (song == null)
                 {
                     Console.WriteLine("\tNo recording found!");
                 }
                 else
                 {
-                    Console.WriteLine($"\tSong title:\n\t\t{t.song.Title}");
+                    Console.WriteLine($"\tSong title:\n\t\t{song.Title}");
                     Console.WriteLine($"\tArtists:");
-                    foreach (var a in t.song.ArtistCredit)
+                    foreach (var a in song.ArtistCredit)
                         Console.WriteLine($"\t\t{a.Name}");
-                    Console.WriteLine($"\tAlbum:\n\t\t{t.song.ReleaseGroup}");
+                    Console.WriteLine($"\tAlbum:\n\t\t{song.ReleaseGroup}");
                 }
             }
         }
