@@ -1,3 +1,6 @@
-obj
+# Visual Studio configuration files
 .vs
+
+# Binaries and executables
+obj
 bin
